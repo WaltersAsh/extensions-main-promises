@@ -32,6 +32,8 @@ export const buonduaInfo: SourceInfo = {
     }]
 }
 
+const BD_DOMAIN = 'https://buondua.com/'
+
 export class buondua extends Source {
     readonly requestManager: RequestManager = createRequestManager({
         requestsPerSecond: 3,
@@ -45,14 +47,27 @@ export class buondua extends Source {
                         'referer': 'https://buondua.com/'
                     }
                 }
-                return request
+                return request;
             },
-            interceptResponse: async (response: Response): Promise<Response> => { return response }
+            interceptResponse: async (response: Response): Promise<Response> => { 
+                return response; 
+            }
         }
     })
 
+    override getMangaShareUrl(mangaId: string): string {
+        return `${BD_DOMAIN}${mangaId}`;
+    }
+
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        throw new Error("Not Implemented");
+        const request = createRequestObject({
+            url: `${BD_DOMAIN}`,
+            method: 'GET'
+        })
+
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data);
+        //parseHomeSections($, sectionCallback);
     }
 
     override async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
